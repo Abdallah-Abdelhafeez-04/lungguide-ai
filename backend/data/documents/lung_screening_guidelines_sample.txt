@@ -1,0 +1,37 @@
+# Lung Cancer Screening — Clinical Evidence Guidelines (USPSTF & ACS)
+# Source Reference: USPSTF Recommendation Statement (JAMA 2021;325(10):962-970) & ACS 2023 Guideline Update
+
+## Overview & Evidence Base (JAMA 2021;325:962)
+Lung cancer screening aims to detect lung cancer at an early, asymptomatic stage in high-risk individuals. The primary screening modality is annual low-dose computed tomography (LDCT). Evidence from randomized trials including the National Lung Screening Trial (NLST) and NELSON trial demonstrates a significant reduction in lung cancer mortality of 20% to 24%.
+
+## Eligibility Criteria — USPSTF Recommendation (JAMA 2021;325:962-964)
+The U.S. Preventive Services Task Force (USPSTF) recommends annual screening for lung cancer with LDCT in adults who meet all three criteria:
+1. Aged 50 to 80 years.
+2. Have a 20 pack-year smoking history (e.g., 1 pack/day for 20 years, or 2 packs/day for 10 years).
+3. Currently smoke or have quit within the past 15 years.
+
+Discontinuation Criteria (USPSTF): Screening should be discontinued once a person has not smoked for 15 years, reaches 81 years of age, or develops a health problem that substantially limits life expectancy or the ability/willingness to undergo curative lung surgery.
+
+## ACS 2023 Guideline Update — Multi-Guideline Logic & Comparison
+In November 2023, the American Cancer Society (ACS) updated its lung cancer screening guideline:
+- Age: 50 to 80 years.
+- Smoking history: 20 or more pack-years.
+- Smoking status: Currently smoke or formerly smoked.
+- Key distinction from USPSTF: ACS 2023 eliminated the "years since quitting" requirement. Under ACS 2023, individuals who quit smoking 15 or more years ago (such as 18 years ago) remain eligible for annual screening as long as they meet the age and pack-year criteria. In contrast, under the USPSTF 2021 recommendation, a person who quit 18 years ago is ineligible due to the 15-year quit cutoff rule.
+
+## Screening Intervals & Lung-RADS Nodule Management (JAMA 2021;325:965-966)
+Screening intervals are determined annually unless indeterminate nodules are detected:
+- Negative scan (Lung-RADS 1 or 2): Repeat LDCT in 12 months.
+- Indeterminate or suspicious nodules (Lung-RADS 3 or 4): Short-interval follow-up LDCT at 3 to 6 months, PET-CT, or tissue biopsy based on nodule size, solid component, and risk score.
+
+## Screening Harms & Risks (JAMA 2021;325:966-968)
+Clinicians must inform patients about key potential harms:
+- False-positive results: Up to 15-20% of baseline scans require follow-up imaging, though the vast majority of detected nodules are benign.
+- Overdiagnosis: Detection of indolent cancers that would not have caused clinical harm in the patient's lifetime.
+- Radiation exposure: Low-dose CT exposes the patient to approximately 1.5 mSv per scan, which is substantially lower than conventional diagnostic chest CT (~7 mSv).
+
+## Shared Decision-Making & Smoking Cessation (JAMA 2021;325:968-970)
+A shared decision-making visit is recommended prior to initiating screening to discuss individual risk, benefits, harms, and patient preferences. Smoking cessation counseling and interventions must be offered to current smokers.
+
+## Important Clinical Scope Notice
+This guideline summary is for educational and evidence-retrieval purposes. It does not replace clinical judgment, diagnostic evaluations for acute symptoms, or individualized cancer treatment planning.
