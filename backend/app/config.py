@@ -11,8 +11,8 @@ class Settings(BaseSettings):
     )
 
     gemini_api_key: str = ""
-    gemini_chat_model: str = "gemini-3.5-flash"
-    gemini_embedding_model: str = "gemini-embedding-2"
+    gemini_chat_model: str = "gemini-2.5-flash"
+    gemini_embedding_model: str = "gemini-embedding-001"
 
     retrieval_top_k: int = 5
     min_relevance_score: float = 0.28

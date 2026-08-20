@@ -1,31 +1,19 @@
 services:
   - type: web
     name: lungguide-ai
-    env: python
-
-    buildCommand: >
-      cd frontend &&
-      npm install &&
-      npm run build &&
-      cd ../backend &&
-      pip install -r requirements.txt
-
-    startCommand: >
-      python scripts/ingest.py &&
-      uvicorn app.main:app
-      --app-dir backend
-      --host 0.0.0.0
-      --port $PORT
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
 
     envVars:
       - key: GEMINI_API_KEY
         sync: false
 
       - key: GEMINI_CHAT_MODEL
-        value: gemini-3.5-flash
+        value: gemini-2.5-flash
 
       - key: GEMINI_EMBEDDING_MODEL
-        value: gemini-embedding-2
+        value: gemini-embedding-001
 
       - key: RETRIEVAL_TOP_K
         value: "5"
@@ -41,9 +29,6 @@ services:
 
       - key: BACKEND_HOST
         value: "0.0.0.0"
-
-      - key: BACKEND_PORT
-        value: "8000"
 
       - key: CORS_ORIGINS
         value: "*"

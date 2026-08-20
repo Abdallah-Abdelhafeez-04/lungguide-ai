@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-# Adversarial & Jailbreak Patterns
+# Adversarial & Jailbreak Patterns (English & Arabic)
 INJECTION_PATTERNS = [
     r"ignore (all )?(previous|prior|above) instructions",
     r"disregard (the )?(system|safety) (prompt|rules)",
@@ -15,32 +15,61 @@ INJECTION_PATTERNS = [
     r"jailbreak",
     r"act as (if|a|an)",
     r"bypass (safety|filters|rules)",
+    # Arabic injection patterns
+    r"تجاهل (كل |جميع )?(التعليمات|الأوامر|إرشادات الأمان)",
+    r"تجاوز (قواعد|فلاتر|إرشادات) (الأمان|السلامة)",
+    r"أنت الآن (طبيب|دكتور|أخصائي|دان)",
+    r"وضع دان",
+    r"جيلبريك",
+    r"تظاهر (بأنك|أنك)",
+    r"تصرف كأنك",
 ]
 
-# Chemotherapy & Treatment / Prescription Patterns
+# Chemotherapy & Treatment / Prescription Patterns (English & Arabic)
 TREATMENT_PRESCRIPTION_PATTERNS = [
     r"\b(chemotherapy|chemo|radiation therapy|radiotherapy|surgery|immunotherapy|targeted therapy)\b",
     r"\b(prescribe|prescription|dosage|dose|mg|pill|medication|drug regimen)\b",
     r"\b(what (chemotherapy|chemo|medication|medicine|drug) should i take)\b",
     r"\b(treatment plan for stage|cure my cancer|chemo regimen)\b",
+    # Arabic treatment / prescription patterns
+    r"(علاج كيماوي|العلاج الكيماوي|كيماوي|العلاج الإشعاعي|إشعاعي|جراحة سرطان|علاج مناعي|علاج موجه)",
+    r"(جرعة|جرعات|وصفة طبية|روشتة|دواء|أدوية|عقاقير|حبوب|بروتوكول علاج)",
+    r"(ما هو (العلاج الكيماوي|الدواء) الذي يجب أن (آخذه|أتناوله)|اكتب لي (علاج|دواء|جرعة))",
+    r"(خطة علاج لسرطان|علاج المرحلة|كيف أعالج السرطان)",
 ]
 
-# Acute Symptom & Individual Diagnostic Patterns
+# Acute Symptom & Individual Diagnostic Patterns (English & Arabic)
 ACUTE_DIAGNOSTIC_PATTERNS = [
     r"\b(coughing up blood|hemoptysis|spitting blood)\b",
     r"\b(do i have cancer|diagnose me|diagnose my symptoms|is this lung cancer)\b",
     r"\b(severe chest pain|cannot breathe|sudden shortness of breath|gasping for air)\b",
     r"\b(what does my lump mean|my scan shows a tumor do i have cancer)\b",
+    # Arabic acute diagnostic patterns
+    r"(سعال دموي|بصاق دم|كحة دم|أبصق دم|نزول دم مع (الكحة|السعال)|دم في البلغم)",
+    r"(هل أنا مصاب بالسرطان|شخص حالتي|شخص أعراضي|هل لدي سرطان الرئة|هل هذا سرطان)",
+    r"(ألم شديد في الصدر|لا أستطيع التنفس|ضيق تنفس مفاجئ|اختناق|صعوبة شديدة في التنفس)",
+    r"(ماذا تعني الكتلة|لدي ورم هل هو سرطان)",
 ]
 
-# Ambiguous / Underspecified Patterns
+# Ambiguous / Underspecified Patterns (English & Arabic)
 UNDERSPECIFIED_PATTERNS = [
-    r"^(am i eligible|can i get screened|should i get screened|am i a candidate)\??$",
-    r"^(who|what|when|where|why|how)\??$",
-    r"^(screening|lung|ldct)\??$",
-    r"^(tell me more|more info|explain|help me)\.?$",
-    r"^eligibility\??$",
+    r"^(am i eligible|can i get screened|should i get screened|am i a candidate)[?؟]?$",
+    r"^(who|what|when|where|why|how)[?؟]?$",
+    r"^(screening|lung|ldct)[?؟]?$",
+    r"^(tell me more|more info|explain|help me)[\.?؟]?$",
+    r"^eligibility[?؟]?$",
+    # Arabic ambiguous patterns
+    r"^(هل أنا مؤهل|هل يمكنني الفحص|هل يجب أن أخضع للفحص|هل يناسبني الفحص)[?؟]?$",
+    r"^(من|ماذا|متى|أين|لماذا|كيف)[?؟]?$",
+    r"^(فحص|الرئة|فحص مبكر|أشعة مقطعية|فحص الرئة)[?؟]?$",
+    r"^(أخبرني المزيد|معلومات أكثر|اشرح لي|ساعدني)[\.?؟]?$",
+    r"^(الأهلية|معايير الفحص|شروط الفحص)[?؟]?$",
 ]
+
+
+def is_arabic(text: str) -> bool:
+    """Check if the given text contains Arabic characters."""
+    return bool(re.search(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]", text))
 
 
 def normalize(text: str) -> str:
@@ -66,7 +95,7 @@ def is_ambiguous(text: str) -> bool:
     normalized = normalize(text)
     if any(re.search(pattern, normalized) for pattern in UNDERSPECIFIED_PATTERNS):
         return True
-    if len(normalized) < 12 and not any(kw in normalized for kw in ["uspstf", "acs", "nlst"]):
+    if len(normalized) < 12 and not any(kw in normalized for kw in ["uspstf", "acs", "nlst", "فحص", "سرطان"]):
         return True
     return False
 
@@ -89,7 +118,52 @@ def check_safety_guardrails(text: str) -> tuple[bool, str | None]:
     return False, None
 
 
-def build_refusal(reason: str) -> str:
+def build_refusal(reason: str, lang: str = "en") -> str:
+    if lang == "ar":
+        refusals_ar = {
+            "GUARDRAIL_BLOCKED": (
+                "⚠️ **إجراء أمني نشط**: لا يمكنني تجاوز إرشادات الأمان أو انتحال شخصيات غير مصرح بها. "
+                "يعمل LungGuide AI حصرياً كمساعد تعليمي مبني على الأدلة السريرية لإرشادات فحص سرطان الرئة."
+            ),
+            "TREATMENT_PRESCRIPTION_REFUSAL": (
+                "🚫 **خارج نطاق الاختصاص (العلاج والوصفات الطبية)**: لا يمكن لـ LungGuide AI وصف الأدوية، "
+                "أو اقتراح بروتوكولات العلاج الكيماوي، أو حساب جرعات العقاقير، أو تصميم خطط علاج السرطان. "
+                "يُرجى استشارة **طبيب أورام معتمد أو فريق الرعاية السريرية الخاص بك** للحصول على خطة علاجية وإدارة الأدوية الخاصة بك."
+            ),
+            "INDIVIDUAL_DIAGNOSTIC_REFUSAL": (
+                "🚨 **تنبيه سريري عاجل (رفض التشخيص الفردي)**: لا يمكن لـ LungGuide AI تشخيص الأعراض الفردية "
+                "أو تحديد ما إذا كنت مصاباً بسرطان الرئة. الأعراض مثل سعال الدم (hemoptysis)، أو ضيق التنفس الشديد المفاجئ، "
+                "أو ألم الصدر غير المبرر تتطلب تقييماً طبياً فورياً. "
+                "يُرجى التوجه إلى **طوارئ المستشفى أو استشارة الطبيب فوراً**."
+            ),
+            "CLARIFICATION_REQUIRED": (
+                "📋 **مطلوب توضيح**: لتقييم أهليتك لفحص سرطان الرئة وفقاً للإرشادات بدقة، يُرجى توضيح المعايير الثلاثة التالية:\n"
+                "1. **العمر** (مثال: 55 سنة)\n"
+                "2. **تاريخ التدخين** بحساب (سنة-حزمة) (مثال: 20 سنة-حزمة = علبة واحدة يومياً لمدة 20 سنة)\n"
+                "3. **حالة التدخين الحالية** (مدخن حالي أو عدد السنوات منذ الإقلاع)\n\n"
+                "*مثال: 'عمري 58 عاماً ولدي تاريخ تدخين 25 سنة-حزمة وتوقفت عن التدخين منذ 8 سنوات، هل أنا مؤهل للفحص؟'*"
+            ),
+            "INSUFFICIENT_EVIDENCE": (
+                "🔍 **أدلة غير كافية**: نصوص الإرشادات السريرية المسترجعة لا تحتوي على أدلة كافية بدرجة موثوقية عالية "
+                "(درجة الصلة أقل من الحد الأدنى τ = 0.28) للإجابة على هذا السؤال بشكل موثوق. "
+                "لن يقوم LungGuide AI بالتخمين أو تقديم إجابات خارج الإرشادات السريرية المعتمدة. "
+                "يُرجى محاولة إعادة صياغة السؤال أو السؤال حول توصيات فحص سرطان الرئة المعتمدة (USPSTF / ACS)."
+            ),
+            "injection": (
+                "⚠️ **إجراء أمني نشط**: لا يمكنني تجاوز إرشادات الأمان. يعمل LungGuide AI كمساعد تعليمي لإرشادات الفحص فقط."
+            ),
+            "out_of_scope": (
+                "🚫 **خارج نطاق الاختصاص**: لا يمكنني تقديم تشخيص فردي أو وصف علاجات. يُرجى استشارة طبيب مختص."
+            ),
+            "ambiguous": (
+                "📋 **مطلوب توضيح**: يُرجى تحديد العمر وتاريخ التدخين وحالة التدخين الحالية لتقييم الأهلية."
+            ),
+            "insufficient_evidence": (
+                "🔍 **أدلة غير كافية**: لم يتم العثور على أدلة كافية من الإرشادات السريرية (أقل من الحد الأدنى τ = 0.28)."
+            ),
+        }
+        return refusals_ar.get(reason, refusals_ar["INSUFFICIENT_EVIDENCE"])
+
     refusals = {
         "GUARDRAIL_BLOCKED": (
             "⚠️ **Security Guardrail Active**: I cannot override safety guidelines or adopt "
@@ -139,3 +213,4 @@ def build_refusal(reason: str) -> str:
         ),
     }
     return refusals.get(reason, refusals["INSUFFICIENT_EVIDENCE"])
+

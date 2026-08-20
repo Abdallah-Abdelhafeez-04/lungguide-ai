@@ -19,6 +19,7 @@ from app.services.retriever import retrieve
 from app.services.safety import (
     build_refusal,
     check_safety_guardrails,
+    is_arabic,
     is_prompt_injection,
     is_treatment_or_prescription,
 )
@@ -49,28 +50,30 @@ def chat(request: ChatRequest) -> ChatResponse:
     history = [turn.model_dump() for turn in request.history]
     combined = conversation_text(history, question)
 
+    lang = "ar" if is_arabic(combined) else "en"
+
     if is_prompt_injection(question):
         return ChatResponse(
-            answer=build_refusal("GUARDRAIL_BLOCKED"),
+            answer=build_refusal("GUARDRAIL_BLOCKED", lang=lang),
             retrieval=_empty_retrieval(question),
             refused=True,
             refusal_reason="GUARDRAIL_BLOCKED",
         )
     if is_treatment_or_prescription(question):
         return ChatResponse(
-            answer=build_refusal("TREATMENT_PRESCRIPTION_REFUSAL"),
+            answer=build_refusal("TREATMENT_PRESCRIPTION_REFUSAL", lang=lang),
             retrieval=_empty_retrieval(question),
             refused=True,
             refusal_reason="TREATMENT_PRESCRIPTION_REFUSAL",
         )
 
     if is_diagnostic_intent(combined):
-        return _diagnostic_chat(question, history, request.allow_web_search, combined)
+        return _diagnostic_chat(question, history, request.allow_web_search, combined, lang=lang)
 
     blocked, refusal_reason = check_safety_guardrails(question)
     if blocked and refusal_reason:
         return ChatResponse(
-            answer=build_refusal(refusal_reason),
+            answer=build_refusal(refusal_reason, lang=lang),
             retrieval=_empty_retrieval(question),
             refused=True,
             refusal_reason=refusal_reason,
@@ -80,7 +83,7 @@ def chat(request: ChatRequest) -> ChatResponse:
 
     if not retrieval_meta.passed_evidence_gate:
         return ChatResponse(
-            answer=build_refusal("INSUFFICIENT_EVIDENCE"),
+            answer=build_refusal("INSUFFICIENT_EVIDENCE", lang=lang),
             evidence=evidence,
             retrieval=retrieval_meta,
             refused=True,
@@ -106,12 +109,13 @@ def _diagnostic_chat(
     history: list[dict],
     allow_web_search: bool | None,
     combined: str,
+    lang: str = "en",
 ) -> ChatResponse:
     emergency = is_emergency_red_flag(combined)
-    missing = missing_intake_fields(combined)
+    missing = missing_intake_fields(combined, lang=lang)
     if missing:
         return ChatResponse(
-            answer=build_intake_prompt(missing, emergency),
+            answer=build_intake_prompt(missing, emergency, lang=lang),
             retrieval=_empty_retrieval(question),
             refused=False,
             mode="diagnostic_intake",
@@ -125,7 +129,7 @@ def _diagnostic_chat(
 
     if consent == "unknown":
         return ChatResponse(
-            answer=build_web_consent_prompt(emergency),
+            answer=build_web_consent_prompt(emergency, lang=lang),
             retrieval=_empty_retrieval(question),
             refused=False,
             mode="diagnostic_intake",
