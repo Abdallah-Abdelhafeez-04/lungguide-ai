@@ -8,10 +8,10 @@ services:
       npm install &&
       npm run build &&
       cd ../backend &&
-      pip install -r requirements.txt &&
-      python scripts/ingest.py
+      pip install -r requirements.txt
 
     startCommand: >
+      python scripts/ingest.py &&
       uvicorn app.main:app
       --app-dir backend
       --host 0.0.0.0

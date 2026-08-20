@@ -15,6 +15,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
+# Create a non-root user (compatible with Hugging Face Spaces UID 1000)
+RUN useradd -m -u 1000 user
+ENV HOME=/home/user \
+    PATH=/home/user/.local/bin:$PATH
+
 # Install Python dependencies
 COPY backend/requirements.txt ./backend/
 RUN pip install --no-cache-dir -r backend/requirements.txt
@@ -25,11 +30,16 @@ COPY backend/ ./backend/
 # Copy built frontend into container
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Configure environment variables
+# Ensure permissions for non-root user
+RUN chown -R user:user /app
+
+USER user
+
+# Configure environment variables (7860 is default for Hugging Face Spaces)
 ENV BACKEND_HOST=0.0.0.0
-ENV BACKEND_PORT=8000
-ENV PORT=8000
-EXPOSE 8000
+ENV BACKEND_PORT=7860
+ENV PORT=7860
+EXPOSE 7860
 
 # Ingest initial guideline documents and start server
-CMD python backend/scripts/ingest.py && uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port ${PORT:-8000}
+CMD python backend/scripts/ingest.py && uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port ${PORT:-7860}
