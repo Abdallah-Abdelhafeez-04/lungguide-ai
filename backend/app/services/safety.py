@@ -72,6 +72,34 @@ def is_arabic(text: str) -> bool:
     return bool(re.search(r"[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]", text))
 
 
+def detect_language(question: str, history: list[dict] | None = None) -> str:
+    """
+    Detect whether to respond in Arabic ('ar') or English ('en').
+    Prioritizes the current user question. If the current question has no clear
+    alphabetical signals (e.g., pure numbers or symbols), checks recent user turns in history.
+    Never checks assistant turns to avoid getting stuck in a previous language.
+    """
+    # 1. If the current question contains Arabic text, use Arabic
+    if is_arabic(question):
+        return "ar"
+
+    # 2. If the current question contains Latin alphabet / English text, use English
+    if re.search(r"[a-zA-Z]", question):
+        return "en"
+
+    # 3. If the question is numeric or neutral (e.g. "55", "10", "??"), inspect recent USER messages only
+    if history:
+        for turn in reversed(history):
+            if turn.get("role") == "user":
+                content = str(turn.get("content", ""))
+                if is_arabic(content):
+                    return "ar"
+                if re.search(r"[a-zA-Z]", content):
+                    return "en"
+
+    return "en"
+
+
 def normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text.strip().lower())
 

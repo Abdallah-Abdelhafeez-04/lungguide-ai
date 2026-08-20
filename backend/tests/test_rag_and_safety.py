@@ -284,9 +284,50 @@ class TestSuite10ArabicMultilingualSupport:
     client = TestClient(app)
 
     def test_arabic_language_detection(self):
-        from app.services.safety import is_arabic
+        from app.services.safety import is_arabic, detect_language
         assert is_arabic("من هم المؤهلون لفحص سرطان الرئة؟") is True
         assert is_arabic("Who is eligible for lung cancer screening?") is False
+
+        # detect_language tests
+        assert detect_language("Who is eligible for lung cancer screening?") == "en"
+        assert detect_language("I am caugh") == "en"
+        assert detect_language("من هم المؤهلون لفحص سرطان الرئة؟") == "ar"
+
+        # Multi-turn history: previous Arabic turns should NOT lock English questions into Arabic
+        arabic_history = [
+            {"role": "user", "content": "ما هي معايير الفحص؟"},
+            {"role": "assistant", "content": "## الإجابة\nمعايير الفحص تشمل..."},
+        ]
+        assert detect_language("I am caugh", arabic_history) == "en"
+        assert detect_language("in english please", arabic_history) == "en"
+
+        # Neutral input inherits user's prior language from history
+        assert detect_language("55", arabic_history) == "ar"
+        english_history = [
+            {"role": "user", "content": "Who is eligible?"},
+            {"role": "assistant", "content": "Eligibility requires..."},
+        ]
+        assert detect_language("55", english_history) == "en"
+
+    def test_language_switch_in_chat_endpoint(self):
+        # Even if previous history was in Arabic, asking in English must yield an English response
+        arabic_history = [
+            {"role": "user", "content": "ما هي معايير الفحص؟"},
+            {"role": "assistant", "content": "## الإجابة\nمعايير الفحص تشمل..."},
+        ]
+        response = self.client.post(
+            "/api/chat",
+            json={
+                "question": "What chemo dosage should I take?",
+                "history": arabic_history,
+            },
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["refused"] is True
+        # Must be English refusal, not Arabic
+        assert "oncologist" in data["answer"].lower()
+        assert "أورام" not in data["answer"]
 
     @pytest.mark.parametrize(
         "query",

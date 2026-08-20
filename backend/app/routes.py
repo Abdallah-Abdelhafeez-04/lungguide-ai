@@ -19,6 +19,7 @@ from app.services.retriever import retrieve
 from app.services.safety import (
     build_refusal,
     check_safety_guardrails,
+    detect_language,
     is_arabic,
     is_prompt_injection,
     is_treatment_or_prescription,
@@ -50,7 +51,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     history = [turn.model_dump() for turn in request.history]
     combined = conversation_text(history, question)
 
-    lang = "ar" if is_arabic(combined) else "en"
+    lang = detect_language(question, history)
 
     if is_prompt_injection(question):
         return ChatResponse(
