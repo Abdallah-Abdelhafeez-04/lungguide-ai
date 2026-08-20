@@ -37,6 +37,9 @@ class Settings(BaseSettings):
 
     @property
     def chroma_dir(self) -> Path:
+        import os
+        if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+            return Path("/tmp/chroma")
         return self.data_dir / "chroma"
 
     @property

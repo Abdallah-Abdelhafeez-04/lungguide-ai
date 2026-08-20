@@ -6,6 +6,13 @@ from app.services.vector_store import vector_store
 
 
 def retrieve(question: str) -> tuple[list[EvidenceChunk], RetrievalMeta]:
+    if vector_store.count == 0:
+        try:
+            from app.services.ingestion import ingest_default_documents
+            ingest_default_documents()
+        except Exception as exc:
+            print(f"Auto-ingest error: {exc}", flush=True)
+
     raw_chunks = vector_store.query(question, top_k=settings.retrieval_top_k)
     evidence = [EvidenceChunk(**chunk) for chunk in raw_chunks]
     max_score = max((c.score for c in evidence), default=None)
