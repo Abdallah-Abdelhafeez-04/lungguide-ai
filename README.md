@@ -14,16 +14,6 @@ LungGuide AI is a Retrieval-Augmented Generation (RAG) system that answers quest
 - Insufficient-evidence detection (no hallucinated answers)
 - Retrieval transparency (scores, thresholds, gate status)
 
-## Hackathon Requirement Coverage
-
-- **Document ingestion:** official USPSTF PDF parsing, chunking, Gemini embeddings, Chroma indexing, and document/section/page metadata.
-- **Retrieval:** top-k semantic search, relevance scoring, evidence threshold, and a separate evidence workspace that shows the retrieved passages before users rely on the answer.
-- **Grounded generation:** Gemini receives only the retrieved passages and returns structured Markdown with numbered citation markers. The interface resolves each marker to a source card containing the document, section, and page.
-- **Safety:** in-scope checks, ambiguity handling, prompt-injection resistance, treatment/diagnosis refusal, and insufficient-evidence responses.
-- **Live demo UX:** Home, Ask LungGuide, and About pages; citation cards; evidence scores; evidence-gate status; and suggested in-scope / refusal test questions.
-
-Before final judging, replace the three placeholder team labels on the **About** page with your team members' names.
-
 ## Tech Stack
 
 | Layer | Technology |
@@ -125,15 +115,4 @@ lungguide-ai/
 │           ├── ChatPanel.tsx
 │           └── EvidencePanel.tsx
 └── .env.example
-```
 
-## Hackathon Demo Tips
-
-1. Ask: *"Who is eligible for lung cancer screening?"* → shows citations + evidence
-2. Ask: *"What chemotherapy should I take?"* → out-of-scope refusal
-3. Ask: *"screening"* → ambiguous question handling
-4. Show the evidence panel with retrieval scores and gate status
-
-## License
-
-MIT — for educational/hackathon use.
